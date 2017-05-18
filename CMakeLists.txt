@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.1)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Set the project name
-set(PNAME SFML-Tools)
+set(PNAME GUI-XML-Test)
 project(${PNAME})
 
 # Set up variables, and find SFML
@@ -129,7 +129,6 @@ target_link_libraries (${PNAME} ${SFML_LIBRARIES} ${SFML_DEPENDENCIES})
 target_link_libraries (${PNAME} ${OPENGL_LIBRARIES})
 target_link_libraries (${PNAME} ${GLEW_LIBRARIES})
 #target_link_libraries (${PNAME} ${Vulkan_LIBRARIES})
-#target_link_libraries(${PNAME} "/Users/cs445001_09/Desktop/voxel-raycaster/SFML/extlibs/freetype.framework/Versions/A/freetype")
 
 if (NOT WIN32)
 	target_link_libraries (${PNAME} -lpthread)

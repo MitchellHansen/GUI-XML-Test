@@ -6,7 +6,7 @@
 #include "Input.h"
 #include "Pub_Sub.h"
 #include "pugixml.hpp"
-
+#include <unordered_map>
 
 // There are two main ways that I can see to solve Z fighting on clicks and rendering.
 // The first being the naive way of sending click events for every window element
@@ -119,23 +119,95 @@ public:
 
 };
 
-class ElementState : pugi::xml_tree_walker{
+// Element State will be a container class for every single XML node in various different styles of containers
+
+// Array of elements derived from the for_each calls
+// --  Useful for bulk iteration, updating, drawing.
+
+// Dict of buckets combining all Elements of the same type
+//  -- Useful for iterating Elements of the same type
+//  -- This can be utilized by the callbacks giving these elements their functionality in c++
+//  -- Each callback will probably just have to use a named string which will tie them to the elements
+
+// HTML : Tree data structure to allow nested elements
+// CSS  : Layout showing how the tree data structures relate to one another and rendering
+// JS   : scripting affecting the previous two
+
+// XML  : Tree data structure
+// C++  : Element tags hook to
+
+// Elements names will be the "Functionality" hook, i.e take text if a text box, listen to presses for a button
+//
+// Attributes :
+// width, height
+// x, y
+// color, opacity, edges, patterns, textures
+//
+// Attributes can be used to override the functionality provided by the elements
+
+// This would allow Elements to populate various default functionality and then let
+// additional attributes to override the default functionality
+// Maybe a dict which holds a key being the attribute name and then a function which will parse the value
+
+// Should all attributes be linked to functions? Or can they edit behaviour values directly?
+// <TextBox position="center" size="100%" background="black" >
+
+// In this example, the attribute name would be linked to a function which parsed the value
+// --   position would take center and position the node at the center of its parent node
+// --   background would set the background either to the color specified or even a texture
+// --   size would set the margins and size of the node to match their parent, or whatever else is parsable
+
+class Element {
+public:
+    Element(pugi::xml_node& reference) : node_reference(reference) {};
+    ~Element(){};
+
+    virtual void draw(sf::RenderWindow &window) = 0;
 
 
-
-
-    virtual bool for_each(pugi::xml_node& node){
-
-
-    }
-
+private:
+    pugi::xml_node& node_reference;
+    std::unordered_map<std::string, std::function<void()>> functor_handles;
 
 };
 
-struct simple_walker: pugi::xml_tree_walker
-{
-    virtual bool for_each(pugi::xml_node& node)
-    {
+class ElementStates : pugi::xml_tree_walker{
+public:
+    ElementStates(){};
+    ~ElementStates(){};
+
+    bool init(std::string xml_path){
+
+        std::string source = read_file(xml_path);
+
+        pugi::xml_parse_result result = doc.load_string(source.c_str());
+
+        if (result) {
+            std::cout << "XML parsed without errors" << std::endl;
+        }
+        else {
+            std::cout << "XML [" << source << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
+            std::cout << "Error description: " << result.description() << "\n";
+            std::cout << "Error offset: " << result.offset << " (error at [..." << (source.c_str() + result.offset) << "]\n\n";
+            return false;
+        }
+
+        traverse(doc);
+    }
+
+
+private:
+    virtual bool begin(pugi::xml_node& node){
+        std::cout << "START" << std::endl;
+        return true;
+    }
+    virtual bool end(pugi::xml_node& node){
+        std::cout << "END" << std::endl;
+        return true;
+    }
+
+    virtual bool for_each(pugi::xml_node& node){
+
         for (int i = 0; i < depth(); ++i) std::cout << "  "; // indentation
 
         std::cout << "name='" << node.name() << "', value='" << node.value() << "' ,ATTRIBS: ";
@@ -147,35 +219,51 @@ struct simple_walker: pugi::xml_tree_walker
 
         return true; // continue traversal
     }
+
+    void traverse(pugi::xml_document& document){
+        document.traverse(*this);
+    }
+
+
+
+    pugi::xml_document doc;
+    // A map that puts elements in buckets according to their element tag
+    std::unordered_map<std::string, std::vector<int>> element_map;
+    std::vector<std::unique_ptr<Element>> element_list;
+
+};
+
+struct simple_walker: pugi::xml_tree_walker
+{
+
+    virtual bool begin(pugi::xml_node& node){
+        std::cout << "START" << std::endl;
+        return true;
+    }
+    virtual bool end(pugi::xml_node& node){
+        std::cout << "END" << std::endl;
+        return true;
+    }
+
+    virtual bool for_each(pugi::xml_node& node)
+    {
+
+    }
 };
 
 int main() {
 
-    std::string source = read_file("../assets/index.giml");
+    ElementStates states;
+    states.init("../assets/index.giml");
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(source.c_str());
 
-    if (result) {
-        std::cout << "XML [" << source << "] parsed without errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n\n";
-    }
-    else {
-        std::cout << "XML [" << source << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
-        std::cout << "Error description: " << result.description() << "\n";
-        std::cout << "Error offset: " << result.offset << " (error at [..." << (source.c_str() + result.offset) << "]\n\n";
-    }
+    //simple_walker walker;
+    //doc.traverse(walker);
 
-//    for (auto i : doc.children()){
-//        std::cout << i.name() << std::endl;
-//        std::cout << i.attribute("thing:int").value() << std::endl;
-//    }
-
-    simple_walker walker;
-    doc.traverse(walker);
+    return 0;
 
     std::string html = read_file("../assets/index.giml");
 
-    return 0;
     // Start taking tokens, pushing the full <TAG> to the stack
     // When coming upon a </TAG> token, pop the element on the stack
 
