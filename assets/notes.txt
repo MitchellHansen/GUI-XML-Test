@@ -1,0 +1,71 @@
+
+// There are two main ways that I can see to solve Z fighting on clicks and rendering.
+// The first being the naive way of sending click events for every window element
+// matching the clicks coordinates, and then checking for the highest Z element
+// from those window elements.
+// The second way could be using the tree structure to somehow check for Z level
+// implicitly. Though this will remove the users ability to set Z level themselves....
+
+// In order to do a Z check among all of the click subscribers we need to either,
+// redo the way events are handled, or create some sort of central static class which
+// will somehow store state of X elements for each frame
+
+// vr::MouseButtonClickHighestZ
+//      - When the user clicks a button, all of the intersecting panels are compared and
+//        the one with the lowest Z value selected
+//      - Currently all clicks are sent to every panel that looks for clicks. The panel then compares
+//        itself to the click, or not. And act accordingly.
+//      - This allows the panels to be really flexible, but now whenever we need info about the surrounding panels
+//        such as Z height we have no way of getting it. So we will need some sort of shared asset that will
+//        take all the z heights, and then send a vr::MouseButtonClickHighestZ event to the lowest Z subscriber
+//      - Maybe access the shared asset through the pointer back to the event publisher. No everything is hidden
+//        by the polymorphism
+
+// vr::MouseMovedHighestZ
+
+
+// I also need to handle clicking and dragging which probably is best handled by
+// mouse held events and dynamic subscribing and unsubscribing to those events.
+
+
+// Need to handle keyboard input and what constitutes the divide between focused
+// and unfocused elements
+
+
+// Element State will be a container class for every single XML node in various different styles of containers
+
+// Array of elements derived from the for_each calls
+// --  Useful for bulk iteration, updating, drawing.
+
+// Dict of buckets combining all Elements of the same type
+//  -- Useful for iterating Elements of the same type
+//  -- This can be utilized by the callbacks giving these elements their functionality in c++
+//  -- Each callback will probably just have to use a named string which will tie them to the elements
+
+// HTML : Tree data structure to allow nested elements
+// CSS  : Layout showing how the tree data structures relate to one another and rendering
+// JS   : scripting affecting the previous two
+
+// XML  : Tree data structure
+// C++  : Element tags hook to
+
+// Elements names will be the "Functionality" hook, i.e take text if a text box, listen to presses for a button
+//
+// Attributes :
+// width, height
+// x, y
+// color, opacity, edges, patterns, textures
+//
+// Attributes can be used to override the functionality provided by the elements
+
+// This would allow Elements to populate various default functionality and then let
+// additional attributes to override the default functionality
+// Maybe a dict which holds a key being the attribute name and then a function which will parse the value
+
+// Should all attributes be linked to functions? Or can they edit behaviour values directly?
+// <TextBox position="center" size="100%" background="black" >
+
+// In this example, the attribute name would be linked to a function which parsed the value
+// --   position would take center and position the node at the center of its parent node
+// --   background would set the background either to the color specified or even a texture
+// --   size would set the margins and size of the node to match their parent, or whatever else is parsable

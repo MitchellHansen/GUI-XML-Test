@@ -16,16 +16,6 @@
 const double PI = 3.141592653589793238463;
 const float  PI_F = 3.14159265358979f;
 
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::stringstream ss(s);
-    std::string item;
-    std::vector<std::string> elems;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(std::move(item)); // if C++11 (based on comment from @mchiasson)
-    }
-    return elems;
-}
-
 inline float elap_time() {
     static std::chrono::time_point<std::chrono::system_clock> start;
     static bool started = false;

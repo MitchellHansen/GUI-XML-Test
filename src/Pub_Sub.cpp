@@ -32,10 +32,10 @@ void VrEventPublisher::unsubscribe(VrEventSubscriber *s, vr::Event::EventType ty
 void VrEventPublisher::notify_subscribers(std::unique_ptr<vr::Event> event) {
 
 	// Send out the events to the event bucket for that event->type
-	// Each and every event that is received in the recieve_event function
+	// Each and every event that is received in the receive_event function
 	// will be a unique ptr solely owned by that function
 	for (auto s : subscribers[event->type]) {
-		s->recieve_event(this, event->clone());
+        s->receive_event(this, event->clone());
 	}
 
 }
